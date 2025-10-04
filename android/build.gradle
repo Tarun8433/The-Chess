@@ -1,0 +1,38 @@
+ 
+buildscript {   
+    repositories {
+        google()
+        mavenCentral()
+    }
+    ext {
+        // Update these versions as needed
+        kotlin_version = '1.8.20'
+        agp_version = '8.1.0'
+    }
+    dependencies {
+        classpath "com.android.tools.build:gradle:$agp_version"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        // START: FlutterFire Configuration
+        classpath 'com.google.gms:google-services:4.4.0'
+        // END: FlutterFire Configuration
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+rootProject.buildDir = '../build'
+subprojects {
+    project.buildDir = "${rootProject.buildDir}/${project.name}"
+}
+subprojects {
+    project.evaluationDependsOn(':app')
+}
+
+tasks.register("clean", Delete) {
+    delete rootProject.buildDir
+}

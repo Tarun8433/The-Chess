@@ -1,0 +1,1687 @@
+When a pawn reaches the other side of the board, it can be promoted to any piece, including a queen, rook, bishop, or knight. It is possible for a player to have more than one queen on the board if they promote a pawn to a queen even if they still have their original queen. This means that if a player's pawn reaches the end of the board and is promoted to a queen, there can still be two queens on the board.
+
+
+
+
+
+
+
+
+
+
+// class _BoardGameState extends State<BoardGame> {
+//   late List<List<ChessPiece?>> board;
+
+//   late ChessTimer chessTimer;
+//   Duration whiteTime = Duration(minutes: 10);
+//   Duration blackTime = Duration(minutes: 10);
+//   bool gameEnded = false;
+
+//   // The currently selected piece on the chess board,
+// // If no piece is selected, this is null.
+//   ChessPiece? selectedPiece;
+// // The row index of the selected piece
+// // Default value -1 indicated no piece is currently selected;
+//   int selectedRow = -1;
+
+// // The Column index of the selected piece
+// // Default value -1 indicated no piece is currently selected;
+//   int selectedCol = -1;
+//   List<List<int>> validMoves = [];
+
+//   List<ChessPiece> whitePiecesTaken = [];
+
+//   List<ChessPiece> blackPiecesTaken = [];
+
+//   bool isWhiteTurn = true;
+
+//   List<int> whiteKingPosition = [7, 4];
+//   List<int> blackKingPosition = [0, 4];
+//   bool checkStatus = false;
+
+//   List<int>? enPassantTarget;
+
+//   @override
+//   void initState() {
+//     super.initState();
+//     _initializeBoard();
+//     _initializeTimer(); // Add this line
+//   }
+
+//   void _initializeTimer() {
+//     chessTimer = ChessTimer.customTimer(
+//       onTimeUpdate: (Duration white, Duration black) {
+//         if (mounted) {
+//           setState(() {
+//             whiteTime = white;
+//             blackTime = black;
+//           });
+//         }
+//       },
+//       onTimeUp: (bool isWhiteWinner) {
+//         if (mounted) {
+//           setState(() {
+//             gameEnded = true;
+//           });
+//           _showTimeUpDialog(isWhiteWinner);
+//         }
+//       },
+//       initialTime: Duration(minutes: 2),
+//     );
+
+//     whiteTime = chessTimer.whiteTime;
+//     blackTime = chessTimer.blackTime;
+//   }
+
+//   void _initializeBoard() {
+//     // initialize the board with nulls, meaning no pieces in those positions.
+//     List<List<ChessPiece?>> newBoard =
+//         List.generate(8, (index) => List.generate(8, (index) => null));
+
+//     // Place pawns
+//     for (int i = 0; i < 8; i++) {
+//       newBoard[1][i] = ChessPiece(
+//         type: ChessPiecesType.pawn,
+//         isWhite: false,
+//         imagePath: 'images/pawn.png',
+//       );
+
+//       newBoard[6][i] = ChessPiece(
+//         type: ChessPiecesType.pawn,
+//         isWhite: true,
+//         imagePath: 'images/pawn.png',
+//       );
+//     }
+
+//     // Place rooks
+//     newBoard[0][0] = ChessPiece(
+//         type: ChessPiecesType.rook,
+//         isWhite: false,
+//         imagePath: "images/rook.png");
+//     newBoard[0][7] = ChessPiece(
+//         type: ChessPiecesType.rook,
+//         isWhite: false,
+//         imagePath: "images/rook.png");
+//     newBoard[7][0] = ChessPiece(
+//         type: ChessPiecesType.rook,
+//         isWhite: true,
+//         imagePath: "images/rook.png");
+//     newBoard[7][7] = ChessPiece(
+//         type: ChessPiecesType.rook,
+//         isWhite: true,
+//         imagePath: "images/rook.png");
+
+//     // Place knights
+//     newBoard[0][1] = ChessPiece(
+//         type: ChessPiecesType.knight,
+//         isWhite: false,
+//         imagePath: "images/knight.png");
+//     newBoard[0][6] = ChessPiece(
+//         type: ChessPiecesType.knight,
+//         isWhite: false,
+//         imagePath: "images/knight.png");
+//     newBoard[7][1] = ChessPiece(
+//         type: ChessPiecesType.knight,
+//         isWhite: true,
+//         imagePath: "images/knight.png");
+//     newBoard[7][6] = ChessPiece(
+//         type: ChessPiecesType.knight,
+//         isWhite: true,
+//         imagePath: "images/knight.png");
+
+//     // Place bishops
+//     newBoard[0][2] = ChessPiece(
+//         type: ChessPiecesType.bishop,
+//         isWhite: false,
+//         imagePath: "images/bishop.png");
+
+//     newBoard[0][5] = ChessPiece(
+//         type: ChessPiecesType.bishop,
+//         isWhite: false,
+//         imagePath: "images/bishop.png");
+//     newBoard[7][2] = ChessPiece(
+//         type: ChessPiecesType.bishop,
+//         isWhite: true,
+//         imagePath: "images/bishop.png");
+//     newBoard[7][5] = ChessPiece(
+//         type: ChessPiecesType.bishop,
+//         isWhite: true,
+//         imagePath: "images/bishop.png");
+
+//     // Place queens
+//     newBoard[0][3] = ChessPiece(
+//       type: ChessPiecesType.queen,
+//       isWhite: false,
+//       imagePath: 'images/queen.png',
+//     );
+//     newBoard[7][3] = ChessPiece(
+//       type: ChessPiecesType.queen,
+//       isWhite: true,
+//       imagePath: 'images/queen.png',
+//     );
+
+//     // Place kings
+//     newBoard[0][4] = ChessPiece(
+//       type: ChessPiecesType.king,
+//       isWhite: false,
+//       imagePath: 'images/king.png',
+//     );
+//     newBoard[7][4] = ChessPiece(
+//       type: ChessPiecesType.king,
+//       isWhite: true,
+//       imagePath: 'images/king.png',
+//     );
+
+//     board = newBoard;
+//   }
+
+// // USER SELECTED A PIECE
+//   void pieceSelected(int row, int col) {
+//     // Don't allow moves if game ended
+//     if (gameEnded) return;
+//     setState(() {
+//       if (chessTimer.isStopped &&
+//           selectedPiece == null &&
+//           board[row][col] != null) {
+//         chessTimer.startTimer();
+//       }
+//       if (selectedPiece == null && board[row][col] != null) {
+//         if (board[row][col]!.isWhite == isWhiteTurn) {
+//           selectedPiece = board[row][col];
+//           selectedRow = row;
+//           selectedCol = col;
+//         }
+//       } else if (board[row][col] != null &&
+//           board[row][col]!.isWhite == selectedPiece!.isWhite) {
+//         selectedPiece = board[row][col];
+//         selectedRow = row;
+//         selectedCol = col;
+//       } else if (selectedPiece != null &&
+//           validMoves.any((element) => element[0] == row && element[1] == col)) {
+//         movePiece(row, col);
+//       }
+
+//       validMoves = calculateRealValidMoves(
+//           selectedRow, selectedCol, selectedPiece, true);
+//     });
+//   }
+
+//   List<List<int>> calculateRowValidMoves(int row, int col, ChessPiece? piece) {
+//     List<List<int>> candidateMoves = [];
+
+//     if (piece == null) return [];
+
+//     int direction = piece.isWhite ? -1 : 1;
+
+//     switch (piece.type) {
+//       case ChessPiecesType.pawn:
+//         // Move forward
+//         if (isInBoard(row + direction, col) &&
+//             board[row + direction][col] == null) {
+//           candidateMoves.add([row + direction, col]);
+//           // First move double step
+//           if ((row == 6 && piece.isWhite) || (row == 1 && !piece.isWhite)) {
+//             if (board[row + 2 * direction][col] == null) {
+//               candidateMoves.add([row + 2 * direction, col]);
+//             }
+//           }
+//         }
+//         // Capture diagonally
+//         for (int sideCol in [col - 1, col + 1]) {
+//           if (isInBoard(row + direction, sideCol) &&
+//               board[row + direction][sideCol] != null &&
+//               board[row + direction][sideCol]!.isWhite != piece.isWhite) {
+//             candidateMoves.add([row + direction, sideCol]);
+//           }
+//         }
+
+//         // EN PASSANT CAPTURE - NEW CODE
+//         if (enPassantTarget != null) {
+//           int targetRow = enPassantTarget![0];
+//           int targetCol = enPassantTarget![1];
+
+//           // Check if this pawn can capture en passant
+//           if (row + direction == targetRow &&
+//               (col - 1 == targetCol || col + 1 == targetCol)) {
+//             candidateMoves.add([targetRow, targetCol]);
+//           }
+//         }
+//         break;
+
+//       case ChessPiecesType.rook:
+//         var directions = [
+//           [-1, 0],
+//           [1, 0],
+//           [0, -1],
+//           [0, 1]
+//         ];
+//         for (var dir in directions) {
+//           int i = 1;
+//           while (true) {
+//             int newRow = row + i * dir[0];
+//             int newCol = col + i * dir[1];
+//             if (!isInBoard(newRow, newCol)) break;
+//             if (board[newRow][newCol] != null) {
+//               if (board[newRow][newCol]!.isWhite != piece.isWhite) {
+//                 candidateMoves.add([newRow, newCol]);
+//               }
+//               break;
+//             }
+//             candidateMoves.add([newRow, newCol]);
+//             i++;
+//           }
+//         }
+//         break;
+
+//       case ChessPiecesType.knight:
+//         var moves = [
+//           [-2, -1],
+//           [-2, 1],
+//           [-1, -2],
+//           [-1, 2],
+//           [1, -2],
+//           [1, 2],
+//           [2, -1],
+//           [2, 1],
+//         ];
+//         for (var move in moves) {
+//           int newRow = row + move[0];
+//           int newCol = col + move[1];
+//           if (!isInBoard(newRow, newCol)) continue;
+//           if (board[newRow][newCol] == null ||
+//               board[newRow][newCol]!.isWhite != piece.isWhite) {
+//             candidateMoves.add([newRow, newCol]);
+//           }
+//         }
+//         break;
+
+//       case ChessPiecesType.bishop:
+//         var directions = [
+//           [-1, -1],
+//           [-1, 1],
+//           [1, -1],
+//           [1, 1]
+//         ];
+//         for (var dir in directions) {
+//           int i = 1;
+//           while (true) {
+//             int newRow = row + i * dir[0];
+//             int newCol = col + i * dir[1];
+//             if (!isInBoard(newRow, newCol)) break;
+//             if (board[newRow][newCol] != null) {
+//               if (board[newRow][newCol]!.isWhite != piece.isWhite) {
+//                 candidateMoves.add([newRow, newCol]);
+//               }
+//               break;
+//             }
+//             candidateMoves.add([newRow, newCol]);
+//             i++;
+//           }
+//         }
+//         break;
+
+//       case ChessPiecesType.queen:
+//         var directions = [
+//           [-1, 0],
+//           [1, 0],
+//           [0, -1],
+//           [0, 1],
+//           [-1, -1],
+//           [-1, 1],
+//           [1, -1],
+//           [1, 1]
+//         ];
+//         for (var dir in directions) {
+//           int i = 1;
+//           while (true) {
+//             int newRow = row + i * dir[0];
+//             int newCol = col + i * dir[1];
+//             if (!isInBoard(newRow, newCol)) break;
+//             if (board[newRow][newCol] != null) {
+//               if (board[newRow][newCol]!.isWhite != piece.isWhite) {
+//                 candidateMoves.add([newRow, newCol]);
+//               }
+//               break;
+//             }
+//             candidateMoves.add([newRow, newCol]);
+//             i++;
+//           }
+//         }
+//         break;
+
+//       case ChessPiecesType.king:
+//         var moves = [
+//           [-1, -1],
+//           [-1, 0],
+//           [-1, 1],
+//           [0, -1],
+//           /*[0, 0],*/ [0, 1],
+//           [1, -1],
+//           [1, 0],
+//           [1, 1]
+//         ];
+//         for (var move in moves) {
+//           int newRow = row + move[0];
+//           int newCol = col + move[1];
+//           if (!isInBoard(newRow, newCol)) continue;
+//           if (board[newRow][newCol] == null ||
+//               board[newRow][newCol]!.isWhite != piece.isWhite) {
+//             candidateMoves.add([newRow, newCol]);
+//           }
+//         }
+//         break;
+//     }
+
+//     return candidateMoves;
+//   }
+
+//   List<List<int>> calculateRealValidMoves(
+//       int row, int col, ChessPiece? piece, bool checkSimulation) {
+//     List<List<int>> realValidMoves = [];
+//     List<List<int>> candidateMoves = calculateRowValidMoves(row, col, piece);
+//     if (checkSimulation) {
+//       for (var move in candidateMoves) {
+//         int endRow = move[0];
+//         int endCol = move[1];
+//         if (simulatedMoveIsSafe(piece!, row, col, endRow, endCol)) {
+//           realValidMoves.add(move);
+//         }
+//       }
+//     } else {
+//       realValidMoves = candidateMoves;
+//     }
+//     return realValidMoves;
+//   }
+
+//   void movePiece(int newRow, int newCol) {
+//     ChessPiece? capturedPiece;
+
+//     // Handle en passant capture
+//     // bool isEnPassantCapture = false;
+//     if (selectedPiece?.type == ChessPiecesType.pawn &&
+//         enPassantTarget != null &&
+//         newRow == enPassantTarget![0] &&
+//         newCol == enPassantTarget![1]) {
+//       //   isEnPassantCapture = true;
+//       // The captured pawn is not at the target square, but adjacent to it
+//       int capturedPawnRow = selectedPiece!.isWhite ? newRow + 1 : newRow - 1;
+//       capturedPiece = board[capturedPawnRow][newCol];
+//       board[capturedPawnRow][newCol] = null; // Remove the captured pawn
+//     }
+//     // Regular capture
+//     else if (board[newRow][newCol] != null) {
+//       capturedPiece = board[newRow][newCol];
+//     }
+
+//     // Add captured piece to appropriate list
+//     if (capturedPiece != null) {
+//       if (capturedPiece.isWhite) {
+//         whitePiecesTaken.add(capturedPiece);
+//       } else {
+//         blackPiecesTaken.add(capturedPiece);
+//       }
+//     }
+
+//     // Check if this is a pawn double move to set up en passant
+//     List<int>? newEnPassantTarget;
+//     if (selectedPiece?.type == ChessPiecesType.pawn) {
+//       int moveDistance = (newRow - selectedRow).abs();
+//       if (moveDistance == 2) {
+//         // Pawn moved two squares, set en passant target
+//         int enPassantRow = selectedPiece!.isWhite ? newRow + 1 : newRow - 1;
+//         newEnPassantTarget = [enPassantRow, newCol];
+//       }
+//     }
+
+//     // Update king position if king moved
+//     if (selectedPiece?.type == ChessPiecesType.king) {
+//       if (selectedPiece!.isWhite) {
+//         whiteKingPosition = [newRow, newCol];
+//       } else {
+//         blackKingPosition = [newRow, newCol];
+//       }
+//     }
+
+//     // Move the piece
+//     board[newRow][newCol] = selectedPiece;
+//     board[selectedRow][selectedCol] = null;
+
+//     // Handle pawn promotion
+//     if (selectedPiece?.type == ChessPiecesType.pawn &&
+//         ((selectedPiece!.isWhite && newRow == 0) ||
+//             (!selectedPiece!.isWhite && newRow == 7))) {
+//       board[newRow][newCol] = ChessPiece(
+//         type: ChessPiecesType.queen,
+//         isWhite: selectedPiece!.isWhite,
+//         imagePath: 'images/queen.png',
+//       );
+//     }
+
+//     // Update en passant target
+//     enPassantTarget = newEnPassantTarget;
+
+//     // Check for check
+//     if (isKingInCheck(!isWhiteTurn)) {
+//       checkStatus = true;
+//     } else {
+//       checkStatus = false;
+//     }
+//     if (chessTimer.isRunning) {
+//       chessTimer.switchTurn();
+//     }
+
+//     setState(() {
+//       selectedPiece = null;
+//       selectedRow = -1;
+//       selectedCol = -1;
+//       validMoves = [];
+//     });
+
+//     if (isCheckMate(!isWhiteTurn)) {
+//       showDialog(
+//           context: context,
+//           builder: (context) => AlertDialog(
+//                 title: Text("CHECK MATE"),
+//                 actions: [
+//                   TextButton(
+//                       onPressed: resetGame, child: Text("Restart The Game"))
+//                 ],
+//               ));
+//     }
+
+//     isWhiteTurn = !isWhiteTurn;
+//   }
+
+//   bool isKingInCheck(bool isWhiteKing) {
+//     List<int> kingPosition =
+//         isWhiteKing ? whiteKingPosition : blackKingPosition;
+
+//     for (int i = 0; i < 8; i++) {
+//       for (int j = 0; j < 8; j++) {
+//         if (board[i][j] == null || board[i][j]!.isWhite == isWhiteKing) {
+//           continue;
+//         }
+//         List<List<int>> pieceValidMoves =
+//             calculateRealValidMoves(i, j, board[i][j], false);
+
+//         for (List<int> move in pieceValidMoves) {
+//           if (move[0] == kingPosition[0] && move[1] == kingPosition[1]) {
+//             return true;
+//           }
+//         }
+//       }
+//     }
+//     return false;
+//   }
+
+//   bool simulatedMoveIsSafe(
+//       ChessPiece piece, int startRow, int startCol, int endRow, int endCol) {
+//     ChessPiece? originalDestinationPiece = board[endRow][endCol];
+//     ChessPiece? originalEnPassantPiece;
+
+//     // Handle en passant simulation
+//     bool isSimulatedEnPassant = false;
+//     if (piece.type == ChessPiecesType.pawn &&
+//         enPassantTarget != null &&
+//         endRow == enPassantTarget![0] &&
+//         endCol == enPassantTarget![1]) {
+//       isSimulatedEnPassant = true;
+//       int capturedPawnRow = piece.isWhite ? endRow + 1 : endRow - 1;
+//       originalEnPassantPiece = board[capturedPawnRow][endCol];
+//       board[capturedPawnRow][endCol] = null;
+//     }
+
+//     List<int>? originalKingPosition;
+//     if (piece.type == ChessPiecesType.king) {
+//       originalKingPosition =
+//           piece.isWhite ? whiteKingPosition : blackKingPosition;
+
+//       if (piece.isWhite) {
+//         whiteKingPosition = [endRow, endCol];
+//       } else {
+//         blackKingPosition = [endRow, endCol];
+//       }
+//     }
+
+//     board[endRow][endCol] = piece;
+//     board[startRow][startCol] = null;
+
+//     bool kingInCheck = isKingInCheck(piece.isWhite);
+
+//     // Restore board state
+//     board[startRow][startCol] = piece;
+//     board[endRow][endCol] = originalDestinationPiece;
+
+//     // Restore en passant captured piece
+//     if (isSimulatedEnPassant) {
+//       int capturedPawnRow = piece.isWhite ? endRow + 1 : endRow - 1;
+//       board[capturedPawnRow][endCol] = originalEnPassantPiece;
+//     }
+
+//     if (piece.type == ChessPiecesType.king) {
+//       if (piece.isWhite) {
+//         whiteKingPosition = originalKingPosition!;
+//       } else {
+//         blackKingPosition = originalKingPosition!;
+//       }
+//     }
+//     return !kingInCheck;
+//   }
+
+// // 6. ADD the missing isWhite helper function
+// // Add this method to your _BoardGameState class:
+
+//   bool isWhite(int index) {
+//     int row = index ~/ 8;
+//     int col = index % 8;
+//     return (row + col) % 2 == 0;
+//   }
+
+//   bool isCheckMate(bool isWhiteKing) {
+//     if (!isKingInCheck(isWhiteKing)) {
+//       return false;
+//     }
+//     for (int i = 0; i < 8; i++) {
+//       for (int j = 0; j < 8; j++) {
+//         if (board[i][j] == null || board[i][j]!.isWhite != isWhiteKing) {
+//           continue;
+//         }
+//         List<List<int>> validMoves =
+//             calculateRealValidMoves(i, j, board[i][j]!, true);
+//         if (validMoves.isNotEmpty) {
+//           return false;
+//         }
+//       }
+//     }
+//     return true;
+//   }
+
+//   void resetGame() {
+//     Navigator.pop(context);
+//     _initializeBoard();
+//     checkStatus = false;
+//     whitePiecesTaken.clear();
+//     blackPiecesTaken.clear();
+//     whiteKingPosition = [7, 4];
+//     blackKingPosition = [0, 4];
+//     isWhiteTurn = true;
+//     enPassantTarget = null;
+
+//     // Add these lines:
+//     gameEnded = false;
+//     chessTimer.reset();
+//     whiteTime = chessTimer.whiteTime;
+//     blackTime = chessTimer.blackTime;
+
+//     setState(() {});
+//   }
+
+//   @override
+//   void dispose() {
+//     chessTimer.dispose();
+//     super.dispose();
+//   }
+
+//   // Add these methods to your _BoardGameState class in board_game.dart
+
+// // METHOD 1: Show dialog when time runs out
+//   void _showTimeUpDialog(bool isWhiteWinner) {
+//     showDialog(
+//       context: context,
+//       barrierDismissible: false, // Player must choose an option
+//       builder: (context) => AlertDialog(
+//         title: Row(
+//           children: [
+//             Icon(
+//               Icons.timer_off,
+//               color: Colors.red,
+//               size: 24,
+//             ),
+//             SizedBox(width: 8),
+//             Text(
+//               "Time's Up!",
+//               style: TextStyle(
+//                 color: Colors.red,
+//                 fontWeight: FontWeight.bold,
+//               ),
+//             ),
+//           ],
+//         ),
+//         content: Column(
+//           mainAxisSize: MainAxisSize.min,
+//           children: [
+//             Icon(
+//               isWhiteWinner ? Icons.emoji_events : Icons.emoji_events,
+//               color: isWhiteWinner ? Colors.amber : Colors.grey,
+//               size: 48,
+//             ),
+//             SizedBox(height: 16),
+//             Text(
+//               isWhiteWinner
+//                   ? "Black ran out of time.\nWhite wins!"
+//                   : "White ran out of time.\nBlack wins!",
+//               textAlign: TextAlign.center,
+//               style: TextStyle(
+//                 fontSize: 16,
+//                 fontWeight: FontWeight.w500,
+//               ),
+//             ),
+//             SizedBox(height: 12),
+//             Text(
+//               "Game Over",
+//               style: TextStyle(
+//                 fontSize: 14,
+//                 color: Colors.grey[600],
+//                 fontStyle: FontStyle.italic,
+//               ),
+//             ),
+//           ],
+//         ),
+//         actions: [
+//           TextButton(
+//             onPressed: () {
+//               Navigator.of(context).pop(); // Close dialog
+//               // Optionally navigate back or stay on game screen
+//             },
+//             child: Text(
+//               "View Board",
+//               style: TextStyle(color: Colors.grey[600]),
+//             ),
+//           ),
+//           ElevatedButton(
+//             onPressed: () {
+//               Navigator.of(context).pop(); // Close dialog
+//               resetGame(); // Start new game
+//             },
+//             style: ElevatedButton.styleFrom(
+//               backgroundColor: Colors.blue,
+//               foregroundColor: Colors.white,
+//             ),
+//             child: Text("New Game"),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       backgroundColor: Colors.white30,
+//       body: Column(
+//         children: [
+//           // **NEW: Player Turn Indicator**
+//           SafeArea(
+//             child: PlayerTurnIndicator(
+//               isWhiteTurn: isWhiteTurn,
+//               gameEnded: gameEnded,
+//               checkStatus: checkStatus,
+//             ),
+//           ),
+//           // Chess Timer at the top
+//           ChessTimerDisplayForBlack(
+//             chessTimer: chessTimer,
+//             whiteTime: whiteTime,
+//             blackTime: blackTime,
+//           ),
+
+//           // Optional: Valid Moves Debug Display (you can remove this in production)
+//           validMoves.isNotEmpty
+//               ? Container(
+//                   height: 30,
+//                   padding: const EdgeInsets.symmetric(horizontal: 8),
+//                   child: Row(
+//                     children: [
+//                       Text(
+//                         "Valid moves: ",
+//                         style: TextStyle(
+//                           color: Colors.white70,
+//                           fontSize: 10,
+//                         ),
+//                       ),
+//                       Expanded(
+//                         child: ListView.builder(
+//                           scrollDirection: Axis.horizontal,
+//                           shrinkWrap: true,
+//                           itemCount: validMoves.length,
+//                           itemBuilder: (context, index) {
+//                             return Container(
+//                               margin: const EdgeInsets.only(right: 4),
+//                               padding: const EdgeInsets.symmetric(
+//                                   horizontal: 4, vertical: 2),
+//                               decoration: BoxDecoration(
+//                                 color: Colors.white24,
+//                                 borderRadius: BorderRadius.circular(4),
+//                               ),
+//                               child: Text(
+//                                 "${validMoves[index][0]},${validMoves[index][1]}",
+//                                 style: TextStyle(
+//                                   color: Colors.white,
+//                                   fontSize: 10,
+//                                 ),
+//                               ),
+//                             );
+//                           },
+//                         ),
+//                       ),
+//                     ],
+//                   ),
+//                 )
+//               : Container(height: 30),
+//           // Captured Black Pieces
+//           Container(
+//             height: 30,
+//             width: MediaQuery.of(context).size.width,
+//             padding: const EdgeInsets.symmetric(horizontal: 8),
+//             child: Row(
+//               children: [
+//                 Icon(
+//                   Icons.person,
+//                   color: Colors.black,
+//                   size: 16,
+//                 ),
+//                 const SizedBox(width: 8),
+//                 Text(
+//                   "Captured: ",
+//                   style: TextStyle(
+//                     color: Colors.white,
+//                     fontSize: 12,
+//                     fontWeight: FontWeight.w500,
+//                   ),
+//                 ),
+//                 Expanded(
+//                   child: ListView.builder(
+//                     scrollDirection: Axis.horizontal,
+//                     shrinkWrap: true,
+//                     physics: const BouncingScrollPhysics(),
+//                     itemCount: blackPiecesTaken.length,
+//                     itemBuilder: (context, index) => DeadPiece(
+//                       imagePath: blackPiecesTaken[index].imagePath,
+//                       isWhite: false,
+//                     ),
+//                   ),
+//                 ),
+//               ],
+//             ),
+//           ),
+
+//           // Chess Board
+//           Expanded(
+//             flex: 3,
+//             child: GridView.builder(
+//               physics: const NeverScrollableScrollPhysics(),
+//               itemCount: 8 * 8,
+//               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+//                   crossAxisCount: 8),
+//               itemBuilder: (context, index) {
+//                 int row = index ~/ 8;
+//                 int col = index % 8;
+
+//                 bool isSelected = selectedCol == col && selectedRow == row;
+//                 bool isValidMove = false;
+//                 for (var position in validMoves) {
+//                   // compare row and col
+//                   if (position[0] == row && position[1] == col) {
+//                     isValidMove = true;
+//                   }
+//                 }
+//                 return Square(
+//                   isValidMove: isValidMove,
+//                   onTap: () => pieceSelected(row, col),
+//                   isSelected: isSelected,
+//                   isWhite: isWhite(index),
+//                   piece: board[row][col],
+//                   isKingInCheck: board[row][col] != null &&
+//                       board[row][col]!.type == ChessPiecesType.king &&
+//                       isKingInCheck(board[row][col]!.isWhite),
+//                 );
+//               },
+//             ),
+//           ),
+
+//           // Captured White Pieces
+//           Container(
+//             height: 30,
+//             width: MediaQuery.of(context).size.width,
+//             padding: const EdgeInsets.symmetric(horizontal: 8),
+//             child: Row(
+//               children: [
+//                 Icon(
+//                   Icons.person,
+//                   color: Colors.white,
+//                   size: 16,
+//                 ),
+//                 const SizedBox(width: 8),
+//                 Text(
+//                   "Captured: ",
+//                   style: TextStyle(
+//                     color: Colors.white,
+//                     fontSize: 12,
+//                     fontWeight: FontWeight.w500,
+//                   ),
+//                 ),
+//                 Expanded(
+//                   child: ListView.builder(
+//                     scrollDirection: Axis.horizontal,
+//                     shrinkWrap: true,
+//                     physics: const BouncingScrollPhysics(),
+//                     itemCount: whitePiecesTaken.length,
+//                     itemBuilder: (context, index) => DeadPiece(
+//                       imagePath: whitePiecesTaken[index].imagePath,
+//                       isWhite: true,
+//                     ),
+//                   ),
+//                 ),
+//               ],
+//             ),
+//           ),
+
+//           ChessTimerDisplayForWhite(
+//             chessTimer: chessTimer,
+//             whiteTime: whiteTime,
+//             blackTime: blackTime,
+//           ),
+
+//           // Bottom padding
+//           const SizedBox(height: 8),
+//         ],
+//       ),
+//     );
+//   }
+// }
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+         
+// import 'package:the_chess/components/pieces.dart';
+// import 'package:the_chess/components/square.dart';
+// import 'package:flutter/material.dart';
+// import 'components/chess_timer.dart';
+// import 'components/timer_widget.dart';
+// import 'components/dead_piece.dart';
+// import 'helper/helper_function.dart';
+
+// // how can we keep track
+// class BoardGame extends StatefulWidget {
+//   const BoardGame({super.key});
+
+//   @override
+//   State<BoardGame> createState() => _BoardGameState();
+// }
+
+// class _BoardGameState extends State<BoardGame> {
+//   late List<List<ChessPiece?>> board;
+
+//   late ChessTimer chessTimer;
+//   Duration whiteTime = Duration(minutes: 10);
+//   Duration blackTime = Duration(minutes: 10);
+//   bool gameEnded = false;
+
+//   // The currently selected piece on the chess board,
+// // If no piece is selected, this is null.
+//   ChessPiece? selectedPiece;
+// // The row index of the selected piece
+// // Default value -1 indicated no piece is currently selected;
+//   int selectedRow = -1;
+
+// // The Column index of the selected piece
+// // Default value -1 indicated no piece is currently selected;
+//   int selectedCol = -1;
+//   List<List<int>> validMoves = [];
+
+//   List<ChessPiece> whitePiecesTaken = [];
+
+//   List<ChessPiece> blackPiecesTaken = [];
+
+//   bool isWhiteTurn = true;
+
+//   List<int> whiteKingPosition = [7, 4];
+//   List<int> blackKingPosition = [0, 4];
+//   bool checkStatus = false;
+
+//   List<int>? enPassantTarget;
+
+//   @override
+//   void initState() {
+//     super.initState();
+//     _initializeBoard();
+//     _initializeTimer(); // Add this line
+//   }
+
+//   void _initializeTimer() {
+//     chessTimer = ChessTimer.customTimer(
+//       onTimeUpdate: (Duration white, Duration black) {
+//         if (mounted) {
+//           setState(() {
+//             whiteTime = white;
+//             blackTime = black;
+//           });
+//         }
+//       },
+//       onTimeUp: (bool isWhiteWinner) {
+//         if (mounted) {
+//           setState(() {
+//             gameEnded = true;
+//           });
+//           _showTimeUpDialog(isWhiteWinner);
+//         }
+//       },
+//       initialTime: Duration(minutes: 2),
+//     );
+
+//     whiteTime = chessTimer.whiteTime;
+//     blackTime = chessTimer.blackTime;
+//   }
+
+//   void _initializeBoard() {
+//     // initialize the board with nulls, meaning no pieces in those positions.
+//     List<List<ChessPiece?>> newBoard =
+//         List.generate(8, (index) => List.generate(8, (index) => null));
+
+//     // Place pawns
+//     for (int i = 0; i < 8; i++) {
+//       newBoard[1][i] = ChessPiece(
+//         type: ChessPiecesType.pawn,
+//         isWhite: false,
+//         imagePath: 'images/pawn.png',
+//       );
+
+//       newBoard[6][i] = ChessPiece(
+//         type: ChessPiecesType.pawn,
+//         isWhite: true,
+//         imagePath: 'images/pawn.png',
+//       );
+//     }
+
+//     // Place rooks
+//     newBoard[0][0] = ChessPiece(
+//         type: ChessPiecesType.rook,
+//         isWhite: false,
+//         imagePath: "images/rook.png");
+//     newBoard[0][7] = ChessPiece(
+//         type: ChessPiecesType.rook,
+//         isWhite: false,
+//         imagePath: "images/rook.png");
+//     newBoard[7][0] = ChessPiece(
+//         type: ChessPiecesType.rook,
+//         isWhite: true,
+//         imagePath: "images/rook.png");
+//     newBoard[7][7] = ChessPiece(
+//         type: ChessPiecesType.rook,
+//         isWhite: true,
+//         imagePath: "images/rook.png");
+
+//     // Place knights
+//     newBoard[0][1] = ChessPiece(
+//         type: ChessPiecesType.knight,
+//         isWhite: false,
+//         imagePath: "images/knight.png");
+//     newBoard[0][6] = ChessPiece(
+//         type: ChessPiecesType.knight,
+//         isWhite: false,
+//         imagePath: "images/knight.png");
+//     newBoard[7][1] = ChessPiece(
+//         type: ChessPiecesType.knight,
+//         isWhite: true,
+//         imagePath: "images/knight.png");
+//     newBoard[7][6] = ChessPiece(
+//         type: ChessPiecesType.knight,
+//         isWhite: true,
+//         imagePath: "images/knight.png");
+
+//     // Place bishops
+//     newBoard[0][2] = ChessPiece(
+//         type: ChessPiecesType.bishop,
+//         isWhite: false,
+//         imagePath: "images/bishop.png");
+
+//     newBoard[0][5] = ChessPiece(
+//         type: ChessPiecesType.bishop,
+//         isWhite: false,
+//         imagePath: "images/bishop.png");
+//     newBoard[7][2] = ChessPiece(
+//         type: ChessPiecesType.bishop,
+//         isWhite: true,
+//         imagePath: "images/bishop.png");
+//     newBoard[7][5] = ChessPiece(
+//         type: ChessPiecesType.bishop,
+//         isWhite: true,
+//         imagePath: "images/bishop.png");
+
+//     // Place queens
+//     newBoard[0][3] = ChessPiece(
+//       type: ChessPiecesType.queen,
+//       isWhite: false,
+//       imagePath: 'images/queen.png',
+//     );
+//     newBoard[7][3] = ChessPiece(
+//       type: ChessPiecesType.queen,
+//       isWhite: true,
+//       imagePath: 'images/queen.png',
+//     );
+
+//     // Place kings
+//     newBoard[0][4] = ChessPiece(
+//       type: ChessPiecesType.king,
+//       isWhite: false,
+//       imagePath: 'images/king.png',
+//     );
+//     newBoard[7][4] = ChessPiece(
+//       type: ChessPiecesType.king,
+//       isWhite: true,
+//       imagePath: 'images/king.png',
+//     );
+
+//     board = newBoard;
+//   }
+
+// // USER SELECTED A PIECE
+//   void pieceSelected(int row, int col) {
+//     // Don't allow moves if game ended
+//     if (gameEnded) return;
+//     setState(() {
+//       if (chessTimer.isStopped &&
+//           selectedPiece == null &&
+//           board[row][col] != null) {
+//         chessTimer.startTimer();
+//       }
+//       if (selectedPiece == null && board[row][col] != null) {
+//         if (board[row][col]!.isWhite == isWhiteTurn) {
+//           selectedPiece = board[row][col];
+//           selectedRow = row;
+//           selectedCol = col;
+//         }
+//       } else if (board[row][col] != null &&
+//           board[row][col]!.isWhite == selectedPiece!.isWhite) {
+//         selectedPiece = board[row][col];
+//         selectedRow = row;
+//         selectedCol = col;
+//       } else if (selectedPiece != null &&
+//           validMoves.any((element) => element[0] == row && element[1] == col)) {
+//         movePiece(row, col);
+//       }
+
+//       validMoves = calculateRealValidMoves(
+//           selectedRow, selectedCol, selectedPiece, true);
+//     });
+//   }
+
+//   List<List<int>> calculateRowValidMoves(int row, int col, ChessPiece? piece) {
+//     List<List<int>> candidateMoves = [];
+
+//     if (piece == null) return [];
+
+//     int direction = piece.isWhite ? -1 : 1;
+
+//     switch (piece.type) {
+//       case ChessPiecesType.pawn:
+//         // Move forward
+//         if (isInBoard(row + direction, col) &&
+//             board[row + direction][col] == null) {
+//           candidateMoves.add([row + direction, col]);
+//           // First move double step
+//           if ((row == 6 && piece.isWhite) || (row == 1 && !piece.isWhite)) {
+//             if (board[row + 2 * direction][col] == null) {
+//               candidateMoves.add([row + 2 * direction, col]);
+//             }
+//           }
+//         }
+//         // Capture diagonally
+//         for (int sideCol in [col - 1, col + 1]) {
+//           if (isInBoard(row + direction, sideCol) &&
+//               board[row + direction][sideCol] != null &&
+//               board[row + direction][sideCol]!.isWhite != piece.isWhite) {
+//             candidateMoves.add([row + direction, sideCol]);
+//           }
+//         }
+
+//         // EN PASSANT CAPTURE - NEW CODE
+//         if (enPassantTarget != null) {
+//           int targetRow = enPassantTarget![0];
+//           int targetCol = enPassantTarget![1];
+
+//           // Check if this pawn can capture en passant
+//           if (row + direction == targetRow &&
+//               (col - 1 == targetCol || col + 1 == targetCol)) {
+//             candidateMoves.add([targetRow, targetCol]);
+//           }
+//         }
+//         break;
+
+//       case ChessPiecesType.rook:
+//         var directions = [
+//           [-1, 0],
+//           [1, 0],
+//           [0, -1],
+//           [0, 1]
+//         ];
+//         for (var dir in directions) {
+//           int i = 1;
+//           while (true) {
+//             int newRow = row + i * dir[0];
+//             int newCol = col + i * dir[1];
+//             if (!isInBoard(newRow, newCol)) break;
+//             if (board[newRow][newCol] != null) {
+//               if (board[newRow][newCol]!.isWhite != piece.isWhite) {
+//                 candidateMoves.add([newRow, newCol]);
+//               }
+//               break;
+//             }
+//             candidateMoves.add([newRow, newCol]);
+//             i++;
+//           }
+//         }
+//         break;
+
+//       case ChessPiecesType.knight:
+//         var moves = [
+//           [-2, -1],
+//           [-2, 1],
+//           [-1, -2],
+//           [-1, 2],
+//           [1, -2],
+//           [1, 2],
+//           [2, -1],
+//           [2, 1],
+//         ];
+//         for (var move in moves) {
+//           int newRow = row + move[0];
+//           int newCol = col + move[1];
+//           if (!isInBoard(newRow, newCol)) continue;
+//           if (board[newRow][newCol] == null ||
+//               board[newRow][newCol]!.isWhite != piece.isWhite) {
+//             candidateMoves.add([newRow, newCol]);
+//           }
+//         }
+//         break;
+
+//       case ChessPiecesType.bishop:
+//         var directions = [
+//           [-1, -1],
+//           [-1, 1],
+//           [1, -1],
+//           [1, 1]
+//         ];
+//         for (var dir in directions) {
+//           int i = 1;
+//           while (true) {
+//             int newRow = row + i * dir[0];
+//             int newCol = col + i * dir[1];
+//             if (!isInBoard(newRow, newCol)) break;
+//             if (board[newRow][newCol] != null) {
+//               if (board[newRow][newCol]!.isWhite != piece.isWhite) {
+//                 candidateMoves.add([newRow, newCol]);
+//               }
+//               break;
+//             }
+//             candidateMoves.add([newRow, newCol]);
+//             i++;
+//           }
+//         }
+//         break;
+
+//       case ChessPiecesType.queen:
+//         var directions = [
+//           [-1, 0],
+//           [1, 0],
+//           [0, -1],
+//           [0, 1],
+//           [-1, -1],
+//           [-1, 1],
+//           [1, -1],
+//           [1, 1]
+//         ];
+//         for (var dir in directions) {
+//           int i = 1;
+//           while (true) {
+//             int newRow = row + i * dir[0];
+//             int newCol = col + i * dir[1];
+//             if (!isInBoard(newRow, newCol)) break;
+//             if (board[newRow][newCol] != null) {
+//               if (board[newRow][newCol]!.isWhite != piece.isWhite) {
+//                 candidateMoves.add([newRow, newCol]);
+//               }
+//               break;
+//             }
+//             candidateMoves.add([newRow, newCol]);
+//             i++;
+//           }
+//         }
+//         break;
+
+//       case ChessPiecesType.king:
+//         var moves = [
+//           [-1, -1],
+//           [-1, 0],
+//           [-1, 1],
+//           [0, -1],
+//           /*[0, 0],*/ [0, 1],
+//           [1, -1],
+//           [1, 0],
+//           [1, 1]
+//         ];
+//         for (var move in moves) {
+//           int newRow = row + move[0];
+//           int newCol = col + move[1];
+//           if (!isInBoard(newRow, newCol)) continue;
+//           if (board[newRow][newCol] == null ||
+//               board[newRow][newCol]!.isWhite != piece.isWhite) {
+//             candidateMoves.add([newRow, newCol]);
+//           }
+//         }
+//         break;
+//     }
+
+//     return candidateMoves;
+//   }
+
+//   List<List<int>> calculateRealValidMoves(
+//       int row, int col, ChessPiece? piece, bool checkSimulation) {
+//     List<List<int>> realValidMoves = [];
+//     List<List<int>> candidateMoves = calculateRowValidMoves(row, col, piece);
+//     if (checkSimulation) {
+//       for (var move in candidateMoves) {
+//         int endRow = move[0];
+//         int endCol = move[1];
+//         if (simulatedMoveIsSafe(piece!, row, col, endRow, endCol)) {
+//           realValidMoves.add(move);
+//         }
+//       }
+//     } else {
+//       realValidMoves = candidateMoves;
+//     }
+//     return realValidMoves;
+//   }
+
+//   void movePiece(int newRow, int newCol) {
+//     ChessPiece? capturedPiece;
+
+//     // Handle en passant capture
+//     bool isEnPassantCapture = false;
+//     if (selectedPiece?.type == ChessPiecesType.pawn &&
+//         enPassantTarget != null &&
+//         newRow == enPassantTarget![0] &&
+//         newCol == enPassantTarget![1]) {
+//       isEnPassantCapture = true;
+//       // The captured pawn is not at the target square, but adjacent to it
+//       int capturedPawnRow = selectedPiece!.isWhite ? newRow + 1 : newRow - 1;
+//       capturedPiece = board[capturedPawnRow][newCol];
+//       board[capturedPawnRow][newCol] = null; // Remove the captured pawn
+//     }
+//     // Regular capture
+//     else if (board[newRow][newCol] != null) {
+//       capturedPiece = board[newRow][newCol];
+//     }
+
+//     // Add captured piece to appropriate list
+//     if (capturedPiece != null) {
+//       if (capturedPiece.isWhite) {
+//         whitePiecesTaken.add(capturedPiece);
+//       } else {
+//         blackPiecesTaken.add(capturedPiece);
+//       }
+//     }
+
+//     // Check if this is a pawn double move to set up en passant
+//     List<int>? newEnPassantTarget;
+//     if (selectedPiece?.type == ChessPiecesType.pawn) {
+//       int moveDistance = (newRow - selectedRow).abs();
+//       if (moveDistance == 2) {
+//         // Pawn moved two squares, set en passant target
+//         int enPassantRow = selectedPiece!.isWhite ? newRow + 1 : newRow - 1;
+//         newEnPassantTarget = [enPassantRow, newCol];
+//       }
+//     }
+
+//     // Update king position if king moved
+//     if (selectedPiece?.type == ChessPiecesType.king) {
+//       if (selectedPiece!.isWhite) {
+//         whiteKingPosition = [newRow, newCol];
+//       } else {
+//         blackKingPosition = [newRow, newCol];
+//       }
+//     }
+
+//     // Move the piece
+//     board[newRow][newCol] = selectedPiece;
+//     board[selectedRow][selectedCol] = null;
+
+//     // Handle pawn promotion
+//     if (selectedPiece?.type == ChessPiecesType.pawn &&
+//         ((selectedPiece!.isWhite && newRow == 0) ||
+//             (!selectedPiece!.isWhite && newRow == 7))) {
+//       board[newRow][newCol] = ChessPiece(
+//         type: ChessPiecesType.queen,
+//         isWhite: selectedPiece!.isWhite,
+//         imagePath: 'images/queen.png',
+//       );
+//     }
+
+//     // Update en passant target
+//     enPassantTarget = newEnPassantTarget;
+
+//     // Check for check
+//     if (isKingInCheck(!isWhiteTurn)) {
+//       checkStatus = true;
+//     } else {
+//       checkStatus = false;
+//     }
+//     if (chessTimer.isRunning) {
+//       chessTimer.switchTurn();
+//     }
+
+//     setState(() {
+//       selectedPiece = null;
+//       selectedRow = -1;
+//       selectedCol = -1;
+//       validMoves = [];
+//     });
+
+//     if (isCheckMate(!isWhiteTurn)) {
+//       showDialog(
+//           context: context,
+//           builder: (context) => AlertDialog(
+//                 title: Text("CHECK MATE"),
+//                 actions: [
+//                   TextButton(
+//                       onPressed: resetGame, child: Text("Restart The Game"))
+//                 ],
+//               ));
+//     }
+
+//     isWhiteTurn = !isWhiteTurn;
+//   }
+
+//   bool isKingInCheck(bool isWhiteKing) {
+//     List<int> kingPosition =
+//         isWhiteKing ? whiteKingPosition : blackKingPosition;
+
+//     for (int i = 0; i < 8; i++) {
+//       for (int j = 0; j < 8; j++) {
+//         if (board[i][j] == null || board[i][j]!.isWhite == isWhiteKing) {
+//           continue;
+//         }
+//         List<List<int>> pieceValidMoves =
+//             calculateRealValidMoves(i, j, board[i][j], false);
+
+//         for (List<int> move in pieceValidMoves) {
+//           if (move[0] == kingPosition[0] && move[1] == kingPosition[1]) {
+//             return true;
+//           }
+//         }
+//       }
+//     }
+//     return false;
+//   }
+
+//   bool simulatedMoveIsSafe(
+//       ChessPiece piece, int startRow, int startCol, int endRow, int endCol) {
+//     ChessPiece? originalDestinationPiece = board[endRow][endCol];
+//     ChessPiece? originalEnPassantPiece;
+
+//     // Handle en passant simulation
+//     bool isSimulatedEnPassant = false;
+//     if (piece.type == ChessPiecesType.pawn &&
+//         enPassantTarget != null &&
+//         endRow == enPassantTarget![0] &&
+//         endCol == enPassantTarget![1]) {
+//       isSimulatedEnPassant = true;
+//       int capturedPawnRow = piece.isWhite ? endRow + 1 : endRow - 1;
+//       originalEnPassantPiece = board[capturedPawnRow][endCol];
+//       board[capturedPawnRow][endCol] = null;
+//     }
+
+//     List<int>? originalKingPosition;
+//     if (piece.type == ChessPiecesType.king) {
+//       originalKingPosition =
+//           piece.isWhite ? whiteKingPosition : blackKingPosition;
+
+//       if (piece.isWhite) {
+//         whiteKingPosition = [endRow, endCol];
+//       } else {
+//         blackKingPosition = [endRow, endCol];
+//       }
+//     }
+
+//     board[endRow][endCol] = piece;
+//     board[startRow][startCol] = null;
+
+//     bool kingInCheck = isKingInCheck(piece.isWhite);
+
+//     // Restore board state
+//     board[startRow][startCol] = piece;
+//     board[endRow][endCol] = originalDestinationPiece;
+
+//     // Restore en passant captured piece
+//     if (isSimulatedEnPassant) {
+//       int capturedPawnRow = piece.isWhite ? endRow + 1 : endRow - 1;
+//       board[capturedPawnRow][endCol] = originalEnPassantPiece;
+//     }
+
+//     if (piece.type == ChessPiecesType.king) {
+//       if (piece.isWhite) {
+//         whiteKingPosition = originalKingPosition!;
+//       } else {
+//         blackKingPosition = originalKingPosition!;
+//       }
+//     }
+//     return !kingInCheck;
+//   }
+
+// // 6. ADD the missing isWhite helper function
+// // Add this method to your _BoardGameState class:
+
+//   bool isWhite(int index) {
+//     int row = index ~/ 8;
+//     int col = index % 8;
+//     return (row + col) % 2 == 0;
+//   }
+
+//   bool isCheckMate(bool isWhiteKing) {
+//     if (!isKingInCheck(isWhiteKing)) {
+//       return false;
+//     }
+//     for (int i = 0; i < 8; i++) {
+//       for (int j = 0; j < 8; j++) {
+//         if (board[i][j] == null || board[i][j]!.isWhite != isWhiteKing) {
+//           continue;
+//         }
+//         List<List<int>> validMoves =
+//             calculateRealValidMoves(i, j, board[i][j]!, true);
+//         if (validMoves.isNotEmpty) {
+//           return false;
+//         }
+//       }
+//     }
+//     return true;
+//   }
+
+//   void resetGame() {
+//     Navigator.pop(context);
+//     _initializeBoard();
+//     checkStatus = false;
+//     whitePiecesTaken.clear();
+//     blackPiecesTaken.clear();
+//     whiteKingPosition = [7, 4];
+//     blackKingPosition = [0, 4];
+//     isWhiteTurn = true;
+//     enPassantTarget = null;
+
+//     // Add these lines:
+//     gameEnded = false;
+//     chessTimer.reset();
+//     whiteTime = chessTimer.whiteTime;
+//     blackTime = chessTimer.blackTime;
+
+//     setState(() {});
+//   }
+
+//   @override
+//   void dispose() {
+//     chessTimer.dispose();
+//     super.dispose();
+//   }
+
+//   // Add these methods to your _BoardGameState class in board_game.dart
+
+// // METHOD 1: Show dialog when time runs out
+//   void _showTimeUpDialog(bool isWhiteWinner) {
+//     showDialog(
+//       context: context,
+//       barrierDismissible: false, // Player must choose an option
+//       builder: (context) => AlertDialog(
+//         title: Row(
+//           children: [
+//             Icon(
+//               Icons.timer_off,
+//               color: Colors.red,
+//               size: 24,
+//             ),
+//             SizedBox(width: 8),
+//             Text(
+//               "Time's Up!",
+//               style: TextStyle(
+//                 color: Colors.red,
+//                 fontWeight: FontWeight.bold,
+//               ),
+//             ),
+//           ],
+//         ),
+//         content: Column(
+//           mainAxisSize: MainAxisSize.min,
+//           children: [
+//             Icon(
+//               isWhiteWinner ? Icons.emoji_events : Icons.emoji_events,
+//               color: isWhiteWinner ? Colors.amber : Colors.grey,
+//               size: 48,
+//             ),
+//             SizedBox(height: 16),
+//             Text(
+//               isWhiteWinner
+//                   ? "Black ran out of time.\nWhite wins!"
+//                   : "White ran out of time.\nBlack wins!",
+//               textAlign: TextAlign.center,
+//               style: TextStyle(
+//                 fontSize: 16,
+//                 fontWeight: FontWeight.w500,
+//               ),
+//             ),
+//             SizedBox(height: 12),
+//             Text(
+//               "Game Over",
+//               style: TextStyle(
+//                 fontSize: 14,
+//                 color: Colors.grey[600],
+//                 fontStyle: FontStyle.italic,
+//               ),
+//             ),
+//           ],
+//         ),
+//         actions: [
+//           TextButton(
+//             onPressed: () {
+//               Navigator.of(context).pop(); // Close dialog
+//               // Optionally navigate back or stay on game screen
+//             },
+//             child: Text(
+//               "View Board",
+//               style: TextStyle(color: Colors.grey[600]),
+//             ),
+//           ),
+//           ElevatedButton(
+//             onPressed: () {
+//               Navigator.of(context).pop(); // Close dialog
+//               resetGame(); // Start new game
+//             },
+//             style: ElevatedButton.styleFrom(
+//               backgroundColor: Colors.blue,
+//               foregroundColor: Colors.white,
+//             ),
+//             child: Text("New Game"),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       backgroundColor: Colors.white30,
+//       body: Column(
+//         children: [
+//           ChessTimerDisplay(
+//             chessTimer: chessTimer,
+//             whiteTime: whiteTime,
+//             blackTime: blackTime,
+//           ),
+//           Text(
+//             checkStatus ? "CHECK" : "",
+//             style: TextStyle(color: Colors.white),
+//           ),
+//           Expanded(
+//             flex: 3,
+//             child: GridView.builder(
+//               physics: const NeverScrollableScrollPhysics(),
+//               itemCount: 8 * 8,
+//               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+//                   crossAxisCount: 8),
+//               itemBuilder: (context, index) {
+//                 int row = index ~/ 8;
+//                 int col = index % 8;
+
+//                 bool isSelected = selectedCol == col && selectedRow == row;
+//                 bool isValidMove = false;
+//                 for (var position in validMoves) {
+//                   // compare row and col
+//                   if (position[0] == row && position[1] == col) {
+//                     isValidMove = true;
+//                   }
+//                 }
+//                 return Square(
+//                   isValidMove: isValidMove,
+//                   onTap: () => pieceSelected(row, col),
+//                   isSelected: isSelected,
+//                   isWhite: isWhite(index),
+//                   piece: board[row][col],
+//                   isKingInCheck: board[row][col] != null &&
+//                       board[row][col]!.type == ChessPiecesType.king &&
+//                       isKingInCheck(board[row][col]!.isWhite),
+//                 );
+//               },
+//             ),
+//           ),
+//           SizedBox(
+//             height: 25,
+//             width: MediaQuery.of(context).size.width,
+//             child: ListView.builder(
+//               scrollDirection: Axis.horizontal,
+//               shrinkWrap: true,
+//               physics: const NeverScrollableScrollPhysics(),
+//               itemCount: whitePiecesTaken.length,
+//               itemBuilder: (context, index) => DeadPiece(
+//                 imagePath: whitePiecesTaken[index].imagePath,
+//                 isWhite: true,
+//               ),
+//             ),
+//           ),
+//           SizedBox(
+//             height: 25,
+//             width: MediaQuery.of(context).size.width,
+//             child: ListView.builder(
+//               scrollDirection: Axis.horizontal,
+//               shrinkWrap: true,
+//               physics: const NeverScrollableScrollPhysics(),
+//               itemCount: blackPiecesTaken.length,
+//               itemBuilder: (context, index) => DeadPiece(
+//                 imagePath: blackPiecesTaken[index].imagePath,
+//                 isWhite: false,
+//               ),
+//             ),
+//           ),
+//           Text(validMoves.length.toString()),
+//         ],
+//       ),
+//     );
+//   }
+// }

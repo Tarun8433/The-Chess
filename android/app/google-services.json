@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "583822437571",
+    "project_id": "pixel-pawn",
+    "storage_bucket": "pixel-pawn.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:583822437571:android:7e11e0b73f14c170730676",
+        "android_client_info": {
+          "package_name": "com.example.the_chess"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBGhZDBefU_LRqVlEDbLFbIE4wDeohhxSE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
